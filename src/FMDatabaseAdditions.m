@@ -154,7 +154,10 @@ return ret;
 
 @implementation FMResultSet(NECommons)
 -(NSArray*)columns {
-	return [columnNameToIndexMap allKeys];
+    if (!columnNamesSetup) {
+        [self setupColumnNames];
+    }
+    return [columnNameToIndexMap allKeys];
 }
 
 -(NSDictionary*)dictionaryForColumns:(NSArray*)columns {
