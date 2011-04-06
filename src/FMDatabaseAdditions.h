@@ -28,14 +28,11 @@
 - (FMResultSet*)getTableSchema:(NSString*)tableName;
 - (BOOL)columnExists:(NSString*)tableName columnName:(NSString*)columnName;
 
-
 // Convenience Methods
 + (id)databaseWithPathInBundle:(NSString*)inPathInBundle;
 + (id)databaseWithPathInDocuments:(NSString*)path;
 -(NSArray*)resultSetWithSQL:(NSString*)sql args:(NSArray*)args columns:(NSArray*)cols;
-
 @end
-
 
 @interface FMResultSet(NECommons)
 -(NSArray*)columns;
