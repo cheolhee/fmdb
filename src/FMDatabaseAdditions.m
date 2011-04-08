@@ -112,41 +112,52 @@ return ret;
 }
 
 + (id)databaseWithPathInBundle:(NSString*)inPathInBundle {
-	NSString *fullPath = [[[NSBundle mainBundle] bundlePath] 
-						  stringByAppendingPathComponent:inPathInBundle];	
-	return [[[self alloc] initWithPath:fullPath] autorelease];
+    NSString *fullPath = [[[NSBundle mainBundle] bundlePath] 
+                          stringByAppendingPathComponent:inPathInBundle];    
+    return [[[self alloc] initWithPath:fullPath] autorelease];
 }
 
 
 + (id)databaseWithPathInDocuments:(NSString*)path {
-	NSString* documentsPath;
-	NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-	documentsPath = [dirs objectAtIndex:0];
-	NSString *fullPath = [documentsPath stringByAppendingPathComponent:path];	
-	return [[[self alloc] initWithPath:fullPath] autorelease];
+    NSString* documentsPath;
+    NSArray* dirs = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    documentsPath = [dirs objectAtIndex:0];
+    NSString *fullPath = [documentsPath stringByAppendingPathComponent:path];    
+    return [[[self alloc] initWithPath:fullPath] autorelease];
 }
 
 -(NSArray*)resultSetWithSQL:(NSString*)sql args:(NSArray*)args columns:(NSArray*)cols {
-	NSMutableArray *ar = [[NSMutableArray alloc] init];
-	NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
-	FMResultSet *rs = [self executeQuery:sql withArgumentsInArray:args];
-	NSArray *cs;
-	if (cols==nil) {
-		cs = [rs columns];
-	} else {
-		cs = cols;
-	}
-	while ([rs next]) {
-		NSDictionary *d = [rs dictionaryForColumns:cs];
-		if (d!=nil) {
-			[ar addObject:d];
-		}
-	}
-	[rs close];
-	[p drain];
-	return [ar autorelease];
+    NSMutableArray *ar = [[NSMutableArray alloc] init];
+    NSAutoreleasePool *p = [[NSAutoreleasePool alloc] init];
+    FMResultSet *rs = [self executeQuery:sql withArgumentsInArray:args];
+    NSArray *cs;
+    if (cols==nil) {
+        cs = [rs columns];
+    } else {
+        cs = cols;
+    }
+    while ([rs next]) {
+        NSDictionary *d = [rs dictionaryForColumns:cs];
+        if (d!=nil) {
+            [ar addObject:d];
+        }
+    }
+    [rs close];
+    [p drain];
+    return [ar autorelease];
 }
 
+-(NSDictionary*)dictionaryForQuery:(NSString*)query, ... {
+    va_list args;                                                     
+    va_start(args, query);                                         
+    FMResultSet *resultSet = [self executeQuery:query withArgumentsInArray:nil orVAList:args]; 
+    va_end(args);                                                 
+    if (![resultSet next]) { return (NSDictionary*)nil; }
+    NSDictionary* ret = [resultSet dictionaryForColumns:nil];                              
+    [resultSet close];                                    
+    [resultSet setParentDB:nil];              
+    return ret;
+}
 
 @end
 
@@ -161,17 +172,18 @@ return ret;
 }
 
 -(NSDictionary*)dictionaryForColumns:(NSArray*)columns {
-	[columns retain];
-	NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
-	for (NSString *c in columns) {
-		id v = [self stringForColumn:c];
-		if (v==nil) {
-			v = [NSNull null];
-		}
-		[d setObject:v forKey:c];
-	}
-	[columns release];
-	return [d autorelease];
+    NSMutableDictionary *d = [[NSMutableDictionary alloc] init];
+    if (!columns) {
+        columns = [self columns];
+    }
+    for (NSString *c in columns) {
+        id v = [self stringForColumn:c];
+        if (v==nil) {
+            v = [NSNull null];
+        }
+        [d setObject:v forKey:c];
+    }
+    return [d autorelease];
 }
 
 @end

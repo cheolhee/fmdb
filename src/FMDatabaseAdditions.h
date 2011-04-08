@@ -32,6 +32,9 @@
 + (id)databaseWithPathInBundle:(NSString*)inPathInBundle;
 + (id)databaseWithPathInDocuments:(NSString*)path;
 -(NSArray*)resultSetWithSQL:(NSString*)sql args:(NSArray*)args columns:(NSArray*)cols;
+
+-(NSDictionary*)dictionaryForQuery:(NSString*)query, ... ;
+
 @end
 
 @interface FMResultSet(NECommons)
